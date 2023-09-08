@@ -120,19 +120,18 @@ void R3BMSOffsetFinder::Exec(Option_t* /*opt*/)
     {
         return;
     }
-    Double_t SAMPTime = 0;
-    R3BSamplerMappedData* SAMPMapped = nullptr;
 
-    R3BSamplerMappedData* SAMPMSMapped = dynamic_cast<R3BSamplerMappedData*>(fSamplerMSMapped->At(0)); // NOLINT
-    auto SAMPMSTime = SAMPMSMapped->GetTime();
-
-    for (Int_t i = 0; i < sampHits; i++)
+    if (auto* SAMPMSMapped = dynamic_cast<R3BSamplerMappedData*>(fSamplerMSMapped->At(0)); SAMPMSMapped != nullptr)
     {
-        SAMPMapped = dynamic_cast<R3BSamplerMappedData*>(fSamplerMapped->At(i));
-        SAMPTime = SAMPMapped->GetTime();
-
-        // Fill the histogram
-        fh_Offset_Finder->Fill(SAMPTime - SAMPMSTime);
+        for (auto* SAMPMapped : TRangeDynCast<R3BSamplerMappedData>(fSamplerMapped))
+        {
+            fh_Offset_Finder->Fill(SAMPMapped->GetTime() - SAMPMSMapped->GetTime());
+        }
+    }
+    else
+    {
+        LOG(error) << "SAMPMSMapped is nullptr";
+        return;
     }
 }
 
